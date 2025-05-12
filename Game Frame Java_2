@@ -1,0 +1,28 @@
+
+package Paquete;
+import java.awt.Toolkit;
+import javax.swing.JFrame;
+
+public class GameFrame_2 extends JFrame{
+    
+    private static final long serialVersionUID = 1L;
+    
+    GameFrame_2(){
+        GamePanel_2 panel = new GamePanel_2();
+        this.add(panel);
+        this.setTitle("Costela game - Insano");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
+        this.pack();
+        this.setVisible(true);
+        this.setLocationRelativeTo(null);
+        this.setIconImage();
+        
+    }
+
+    private void setIconImage() {
+      setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.jpg")));
+    }
+    
+    
+}
