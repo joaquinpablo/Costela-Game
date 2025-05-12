@@ -1,0 +1,541 @@
+package Paquete;
+
+import java.applet.AudioClip;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.*;
+import java.util.Random;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import javax.swing.JPanel;
+
+public final class GamePanel_1 extends JPanel implements ActionListener{
+
+	private static final long serialVersionUID = 1L;
+	
+	static final int WIDTH = 800;
+	static final int HEIGHT = 800;
+	static final int UNIT_SIZE = 20;
+	static final int NUMBER_OF_UNITS = (WIDTH * HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
+
+        private Clip clip2;
+
+	final int x[] = new int[NUMBER_OF_UNITS];
+	final int y[] = new int[NUMBER_OF_UNITS];
+	
+        int puntajeObjetivo = 50;
+	int length = 3;
+	int foodEaten;
+	int foodX;
+	int foodY;
+        int badfoodX;
+	int badfoodY;
+        int obstaculoX;
+        int obstaculoY;
+        int obstaculo1X;
+        int obstaculo1Y;
+        int obstaculo2X;
+        int obstaculo2Y;
+	char direction = 'D';
+	boolean running = false;
+	Random random;
+	Timer timer1;
+        Timer timer2;
+        Timer timer3;
+        Timer timer4;
+        Timer timer5;
+        int ojoderechoX = x[0];
+        int ojoizquierdoX = y[0];
+        int ojoderechoY = x[0];
+        int ojoizquierdoY = y[0];	
+
+	GamePanel_1() {
+		random = new Random();
+		this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
+		this.setBackground(new Color(107, 16, 32));
+		this.setFocusable(true);
+		this.addKeyListener(new MyKeyAdapter());
+                Reproducir();
+		play();
+	}	
+
+    public void Reproducir() {
+        String filepath = "Normal.wav";
+        Cargarmusica(filepath);
+        
+    }
+public void timers(){
+            switch (foodEaten) {
+                case 0 -> {
+                    timer1 = new Timer(100, this);
+                    timer1.start();
+                }
+                case 10 -> {
+                    timer2 = new Timer(90, this);
+                    timer2.start();
+                    timer1.stop();
+                }
+                case 20 -> {
+                    timer3 = new Timer(80, this);
+                    timer3.start();
+                    timer2.stop();
+                }
+                case 30 -> {
+                    timer4 = new Timer(70, this);
+                    timer4.start();
+                    timer3.stop();
+                }
+                case 40 -> {
+                    timer5 = new Timer(60, this);
+                    timer5.start();
+                    timer4.stop();
+                }
+                default -> {
+                }
+            }
+
+}
+	public void play() {
+		Manzanas();
+		running = true;
+		//cambia la velocidad del juego al subir el timer
+	timers();
+	}
+	
+	@Override
+	public void paintComponent(Graphics graphics) {
+		super.paintComponent(graphics);
+		draw(graphics);
+	}
+	
+        public void SoundEat(){
+        AudioClip sonido;
+        sonido = java.applet.Applet.newAudioClip(getClass().getResource("/Sonidos/Comer.wav"));
+        sonido.play();
+        }
+        public void SoundDeath(){
+        AudioClip sonido;
+        sonido = java.applet.Applet.newAudioClip(getClass().getResource("/Sonidos/Muerte.wav"));
+        sonido.play();
+        }
+        
+	public void move() {
+		for (int i = length; i > 0; i--) {
+
+			x[i] = x[i-1];
+			y[i] = y[i-1];
+		}	
+            switch (direction) {
+                case 'L':
+                    x[0] = x[0] - UNIT_SIZE;
+                    break;
+                case 'R':
+                    x[0] = x[0] + UNIT_SIZE;
+                    break;
+                case 'U':
+                    y[0] = y[0] - UNIT_SIZE;	
+                    break;
+                default:
+                    y[0] = y[0] + UNIT_SIZE;
+                    break;
+            }
+	}
+
+        
+	//Checkea su hay objetos en el mapa
+	public void checkFood() {
+		if(x[0] == foodX && y[0] == foodY) {
+			length++;
+			foodEaten++;
+                        timers();
+			Manzanamala();
+                        Manzanas();
+                        checkObstaculo();
+                        SoundEat();
+		}else if(x[0] == badfoodX && y[0] == badfoodY){
+                    	length--;
+			foodEaten--;
+			Manzanamala();
+                        Manzanas();
+                        checkObstaculo();
+                        SoundEat();
+                }else if(x[0] == obstaculoX && y[0] == obstaculoY){
+                running = false;
+                SoundDeath();
+                }else if(x[0] == obstaculo1X && y[0] == obstaculo1Y){
+                running = false;
+                SoundDeath();
+                }else if(x[0] == obstaculo2X && y[0] == obstaculo2Y){
+                running = false;
+                SoundDeath();
+                }
+	}
+	public void Manzanamala(){
+                if(foodEaten >= 5){
+                badfoodX = random.nextInt((int)(WIDTH / UNIT_SIZE))*UNIT_SIZE;
+		badfoodY = random.nextInt((int)(HEIGHT / UNIT_SIZE))*UNIT_SIZE;   
+                }
+
+        }
+        public void checkObstaculo(){
+                if(foodEaten >= 15){
+                obstaculoX = random.nextInt((int)(WIDTH / UNIT_SIZE))*UNIT_SIZE;
+		obstaculoY = random.nextInt((int)(HEIGHT / UNIT_SIZE))*UNIT_SIZE;
+                }
+                if(foodEaten >= 25){
+                obstaculo1X = random.nextInt((int)(WIDTH / UNIT_SIZE))*UNIT_SIZE;
+		obstaculo1Y = random.nextInt((int)(HEIGHT / UNIT_SIZE))*UNIT_SIZE;
+                }
+                if(foodEaten >= 35){
+                obstaculo2X = random.nextInt((int)(WIDTH / UNIT_SIZE))*UNIT_SIZE;
+		obstaculo2Y = random.nextInt((int)(HEIGHT / UNIT_SIZE))*UNIT_SIZE;
+                }
+
+        }
+        
+	public void draw(Graphics graphics) {
+		
+		if (running) {
+                        //dibujar la comida
+			graphics.setColor(new Color(68, 91, 34)); //
+			graphics.fillOval(foodX-5, foodY, 30, 20);//
+                        graphics.setColor(new Color(119,158,62));//
+			graphics.fillOval(foodX, foodY, 23, 15);//
+                        graphics.setColor(new Color(232,232,232));//
+			graphics.fillRect(foodX+8, foodY+6, 10,2);//
+                        graphics.setColor(new Color(232,232,232));//
+			graphics.fillRect(foodX+14, foodY+4, 2,6);//
+                        
+                        //Dibujar comida mala
+                        if(foodEaten >= 5){
+                        graphics.setColor(new Color(161,91,86)); //
+			graphics.fillOval(badfoodX-5, badfoodY, 30, 20); //
+                        graphics.setColor(new Color(158,19,10));//
+			graphics.fillOval(badfoodX, badfoodY, 23, 15); //
+                        graphics.setColor(new Color(232,232,232));//
+			graphics.fillRect(badfoodX+8, badfoodY+6, 10,2); //
+                        graphics.setColor(new Color(232,232,232)); //
+			graphics.fillRect(badfoodX+14, badfoodY+4, 2,6); //
+                        }
+                        //dibujar obstaculos
+                        if(foodEaten >= 15){
+                        graphics.setColor(new Color(128,64,0));
+			graphics.fillRect(obstaculoX, obstaculoY, UNIT_SIZE, UNIT_SIZE);
+                        graphics.setColor(new Color(247,236,200));
+			graphics.fillRect(obstaculoX+2, obstaculoY+2, 15, 15);
+                        graphics.setColor(new Color(128,64,0));
+			graphics.fillRect(obstaculoX+7, obstaculoY+7, 5, 5);
+                        }
+                        if(foodEaten >= 25){
+                        graphics.setColor(new Color(128,64,0));
+			graphics.fillRect(obstaculo1X, obstaculo1Y, UNIT_SIZE, UNIT_SIZE);
+                        graphics.setColor(new Color(247,236,200));
+			graphics.fillRect(obstaculo1X+2, obstaculo1Y+2, 15, 15);
+                        graphics.setColor(new Color(128,64,0));
+			graphics.fillRect(obstaculo1X+7, obstaculo1Y+7, 5, 5);
+                        }
+                        if(foodEaten >= 35){
+                        graphics.setColor(new Color(128,64,0));
+			graphics.fillRect(obstaculo2X, obstaculo2Y, UNIT_SIZE, UNIT_SIZE);
+                        graphics.setColor(new Color(247,236,200));
+			graphics.fillRect(obstaculo2X+2, obstaculo2Y+2, 15, 15);
+                        graphics.setColor(new Color(128,64,0));
+			graphics.fillRect(obstaculo2X+7, obstaculo2Y+7, 5, 5);
+                        }
+                        //---------------------------------------------------------------------------------------
+                        //dibujar la cara del coco
+			graphics.setColor(new Color(53, 94, 59));
+			graphics.fillRect(x[0], y[0], UNIT_SIZE, UNIT_SIZE);
+                        
+                        for (int i = 1; i < length; i++) {
+                            	graphics.setColor(new Color(107, 142, 35));
+				graphics.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                            switch (direction) {
+                        case 'R' -> {
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i], y[i]+5, 20, 2);
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i], y[i]+13, 20, 2);
+                        }
+                        case 'L' -> {
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i], y[i]+5, 20, 2);
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i], y[i]+13, 20, 2);
+                        }
+                        case 'U' -> {
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i]+5, y[i], 2, 20);
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i]+13, y[i], 2, 20);
+                        }
+                        case 'D' -> {
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i]+5, y[i], 2, 20);
+                                graphics.setColor(new Color(53, 94, 59));
+				graphics.fillRect(x[i]+13, y[i], 2, 20);
+                                                }
+                        default -> {
+                        }
+                    }
+                        }
+                    //=======================================================================================================================================
+                    //Ojos del coco y boca en diferentes direcciones
+                    switch (direction) {
+                        case 'R' -> {
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0], y[0], 10, 10);
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0], y[0]+10, 10, 10);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+3, y[0]+2, 7, 7);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+3, y[0]+11, 7, 7);
+                            
+                            graphics.setColor(new Color(53, 94, 59));
+                            graphics.fillRect(x[0]+20, y[0]+4, 10, 12);
+                        }
+                        case 'L' -> {
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0]+10, y[0], 10, 10);
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0]+10, y[0]+10, 10, 10);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+10, y[0]+2, 7, 7);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+10, y[0]+11, 7, 7);
+                            
+                            graphics.setColor(new Color(53, 94, 59));
+                            graphics.fillRect(x[0]-10, y[0]+4, 10, 12);
+                        }
+                        case 'U' -> {
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0], y[0]+10, 10, 10);
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0]+10, y[0]+10, 10, 10);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+2, y[0]+10, 7, 7);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+11, y[0]+10, 7, 7);
+                            
+                            graphics.setColor(new Color(53, 94, 59));
+                            graphics.fillRect(x[0]+4, y[0]-10, 12, 10);
+                        }
+                        case 'D' -> {
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0]+10, y[0], 10, 10);
+                            graphics.setColor(new Color(255, 255, 255));
+                            graphics.fillOval(x[0], y[0], 10, 10);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+2, y[0]+3, 7, 7);
+                            graphics.setColor(new Color(0, 0, 0));
+                            graphics.fillOval(x[0]+11, y[0]+3, 7, 7);
+                            
+                            graphics.setColor(new Color(53, 94, 59));
+                            graphics.fillRect(x[0]+4, y[0]+20, 12, 10);
+                            
+                            
+                        }
+                        default -> {
+                        }
+                    }
+                    //=======================================================================================================================================
+                    //dibujar la cola del coco
+
+
+                                
+			
+			
+			graphics.setColor(Color.white);
+			graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
+			FontMetrics metrics = getFontMetrics(graphics.getFont());
+			graphics.drawString("Puntaje: " + foodEaten, (WIDTH - metrics.stringWidth("Puntaje: " + foodEaten)) / 2, graphics.getFont().getSize());
+		
+		} else {
+			gameOver(graphics);
+		}
+	}
+	
+	public void Manzanas() {
+		foodX = random.nextInt((int)(WIDTH / UNIT_SIZE))*UNIT_SIZE;
+		foodY = random.nextInt((int)(HEIGHT / UNIT_SIZE))*UNIT_SIZE;
+	}
+	
+	public void checkHit() {
+
+		for (int i = length; i > 0; i--) {
+			if (x[0] == x[i] && y[0] == y[i]) {
+				running = false;
+                                SoundDeath();
+			}
+		}
+		
+
+		if (x[0] < 0 || x[0] > WIDTH || y[0] < 0 || y[0] > HEIGHT) {
+			running = false;
+                        SoundDeath();
+		}
+		
+		if(!running) {
+			if(timer1.isRunning()){
+                            timer1.stop();
+                        }else if(timer2.isRunning()){
+                            timer2.stop();
+                        }else if(timer3.isRunning()){
+                            timer3.stop();
+                        }else if(timer4.isRunning()){
+                            timer4.stop();
+                        }else if(timer5.isRunning()){
+                            timer5.stop();
+                        }
+		}
+	}
+        
+        
+	
+	public void gameOver(Graphics graphics) {
+		graphics.setColor(Color.red);
+		graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
+		FontMetrics metrics = getFontMetrics(graphics.getFont());
+		graphics.drawString("Juego Terminado", (WIDTH - metrics.stringWidth("Juego Terminado")) / 2, HEIGHT / 2);
+                
+                graphics.setColor(Color.white);
+		graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
+		graphics.drawString("Presiona R para reiniciar", (WIDTH - metrics.stringWidth("Juego Terminado")) / 3, HEIGHT / 3);
+		
+		graphics.setColor(Color.white);
+		graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
+		metrics = getFontMetrics(graphics.getFont());
+		graphics.drawString("Puntaje: " + foodEaten, (WIDTH - metrics.stringWidth("Puntaje: " + foodEaten)) / 2, graphics.getFont().getSize());
+
+	}
+        //Revisa el puntaje del juego y si llega a un valor negativo, pierdes pibe.
+	public void checkpuntaje(){
+            if(foodEaten < 0){
+                running = false;
+                SoundDeath();
+            }
+            if(foodEaten == puntajeObjetivo){
+                foodEaten = foodEaten - puntajeObjetivo;
+                piola snake = new piola();
+                setVisible(false);
+                snake.setVisible(true);
+                
+                
+            }
+        }
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		if (running) {
+			move();
+			checkFood();
+			checkHit();
+                        checkpuntaje();
+                        checkMusic();
+		}
+		repaint();
+	}
+public void checkMusic() {
+        if(clip2.isRunning()){
+            
+        }else{
+            clip2.start();
+        }
+    }
+    public void Cargarmusica(String location) {
+        try{
+             File musicPath = new File(location);
+             
+             if(musicPath.exists()){
+                 AudioInputStream audioInput = AudioSystem.getAudioInputStream(musicPath);
+                 clip2 = AudioSystem.getClip();
+                 clip2.open(audioInput);
+                 clip2.start();
+             }else{
+                 System.out.println("Menu Doesn't exist");
+             }
+         }catch(IOException | LineUnavailableException | UnsupportedAudioFileException e){
+             System.out.println(e);
+         }
+    }
+
+
+
+    
+	
+	public class MyKeyAdapter extends KeyAdapter {
+		@Override
+		public void keyPressed(KeyEvent e) {
+			switch(e.getKeyCode()) {
+				case KeyEvent.VK_A -> {
+                                    if (direction != 'R') {
+                                        direction = 'L';
+                                    }
+                        }
+					
+				case KeyEvent.VK_D -> {
+                                    if (direction != 'L') {
+                                        direction = 'R';
+                                    }
+                        }
+					
+				case KeyEvent.VK_W -> {
+                                    if (direction != 'D') {
+                                        direction = 'U';
+                                    }
+                        }
+					
+				case KeyEvent.VK_S -> {
+                                    if (direction != 'U') {
+                                        direction = 'D';
+                                    }
+                        }
+                                case KeyEvent.VK_LEFT -> {
+                                    if (direction != 'R') {
+                                        direction = 'L';
+                                    }
+                        }
+					
+				case KeyEvent.VK_RIGHT -> {
+                                    if (direction != 'L') {
+                                        direction = 'R';
+                                    }
+                        }
+					
+				case KeyEvent.VK_UP -> {
+                                    if (direction != 'D') {
+                                        direction = 'U';
+                                    }
+                        }
+					
+				case KeyEvent.VK_DOWN -> {
+                                    if (direction != 'U') {
+                                        direction = 'D';
+                                    }
+                        }
+                                case KeyEvent.VK_R -> {
+                    restartGame();
+                    System.out.println("restart");
+                    break;
+                                }
+                        }
+                  }
+
+        private void restartGame() {
+            clip2.stop();
+               setVisible(false);
+               new GameFrame_1();
+        }
+
+
+      }
+}
+		
+	
