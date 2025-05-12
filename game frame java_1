@@ -1,0 +1,28 @@
+
+package Paquete;
+import java.awt.Toolkit;
+import javax.swing.JFrame;
+
+public class GameFrame_1 extends JFrame{
+    
+    private static final long serialVersionUID = 1L;
+    
+    GameFrame_1(){
+        GamePanel_1 panel = new GamePanel_1();
+        this.add(panel);
+        this.setTitle("Costela game - Invertido");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
+        this.pack();
+        this.setVisible(true);
+        this.setLocationRelativeTo(null);
+        this.setIconImage();
+        
+    }
+
+    private void setIconImage() {
+      setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.jpg")));
+    }
+    
+    
+}
